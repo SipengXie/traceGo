@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="3d49dba8-0693-4457-9ee5-512e5c09a06a" name="杭州开发">
+        <fileTransfer rootFolder="/root/develop/trace_go" accessType="SFTP" host="124.160.125.233" port="22" sshConfigId="0f26cf2e-fa2e-4510-9d14-9525e09ddef2" sshConfig="root@124.160.125.233:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

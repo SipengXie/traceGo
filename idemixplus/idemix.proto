@@ -1,0 +1,177 @@
+/*
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger/fabric/idemixplus";
+
+// The Identity Mixer protocols make use of pairings (bilinear maps) -
+// functions that can be described as e: G1 x G2 -> GT  that
+// map group elements from the source groups (G1 and G2) to the target group
+// Such groups can be represented by the points on an elliptic curve
+
+// ECP is an elliptic curve point specified by its coordinates
+// ECP corresponds to an element of the first group (G1)
+message ECP {
+  bytes x = 1;
+  bytes y = 2;
+}
+
+// ECP2 is an elliptic curve point specified by its coordinates
+// ECP2 corresponds to an element of the second group (G2)
+message ECP2 {
+  bytes xa = 1;
+  bytes xb = 2;
+  bytes ya = 3;
+  bytes yb = 4;
+}
+
+// IssuerPublicKey specifies an issuer public key that consists of
+// attribute_names - a list of the attribute names of a credential issued by the
+// issuer h_sk, h_rand, h_attrs, w, bar_g1, bar_g2 - group elements
+// corresponding to the signing key, randomness, and attributes proof_c, proof_s
+// compose a zero-knowledge proof of knowledge of the secret key hash is a hash
+// of the public key appended to it
+message IssuerPublicKey {
+  repeated string attribute_names = 1;
+  ECP h_sk = 2;
+  ECP h_rand = 3;
+  ECP2 bar_x = 4;
+  ECP2 bar_y = 5;
+  ECP bar_g1 = 6;
+  ECP bar_g2 = 7;
+  ECP bar_g3 = 8;
+  bytes proof_c_x = 9;
+  bytes proof_s_x = 10;
+  bytes proof_c_y = 11;
+  bytes proof_s_y = 12;
+  bytes hash = 13;
+}
+
+message SecretKey {
+  bytes x = 1;
+  bytes y = 2;
+}
+
+// IssuerKey specifies an issuer key pair that consists of
+// ISk - the issuer secret key and
+// IssuerPublicKey - the issuer public key
+message IssuerKey {
+  SecretKey isk = 1;
+  IssuerPublicKey ipk = 2;
+}
+
+// ADD user key
+message UserPublicKey {
+  repeated string attribute_names = 1;
+  ECP h_sk = 2;
+  ECP h_rand = 3;
+  ECP2 w = 4;
+  ECP bar_g1 = 5;
+  ECP bar_g2 = 6;
+  bytes proof_c = 7;
+  bytes proof_s = 8;
+  bytes hash = 9;
+  ECP UPK = 10;
+}
+
+message Trace {
+  ECP2 T = 1;
+  UserPublicKey upk = 2;
+}
+
+// for traces
+message Traces { repeated Trace traceList = 1; }
+
+message UserSecretKey { bytes x = 1; }
+message UserKey {
+  UserSecretKey usk = 1;
+  UserPublicKey upk = 2;
+}
+
+message SignedAttribute {
+  ECP a = 1;
+  ECP b = 2;
+}
+
+message HiddenAttribute {
+  ECP sigma_1 = 1;
+  ECP sigma_2 = 2;
+  ECP sigma_3 = 3;
+  bytes proof_c = 4;
+  bytes proof_s = 5;
+}
+
+// Credential specifies a credential object that consists of
+// a, b, e, s - signature value
+// attrs - attribute values
+message Credential {
+  repeated SignedAttribute creds = 1;
+  repeated string attribute_names = 2;
+  repeated bytes attrs = 3;
+}
+
+message NymSignature {
+  ECP eta = 1;
+  ECP xi = 2;
+  repeated HiddenAttribute hides = 3;
+  repeated bytes attrs = 4;
+  bytes nonce = 5;
+
+  // TODO add code ========================
+  bytes revocation_pk_sig = 6;
+  int64 epoch = 7;
+  NonRevocationProof non_revocation_proof = 8;
+  ECP2 revocation_epoch_pk = 9;
+  // ======================================
+}
+
+// CredRequest specifies a credential request object that consists of
+// nym - a pseudonym, which is a commitment to the user secret
+// issuer_nonce - a random nonce provided by the issuer
+// proof_c, proof_s - a zero-knowledge proof of knowledge of the
+// user secret inside Nym
+message CredRequest {
+  ECP nym = 1;
+  bytes issuer_nonce = 2;
+  bytes proof_c = 3;
+  bytes proof_s1 = 4;
+  bytes proof_s2 = 5;
+}
+
+// NonRevocationProof contains proof that the credential is not revoked
+message NonRevocationProof {
+  int32 revocation_alg = 1;
+  bytes non_revocation_proof = 2;
+}
+
+message CredentialRevocationInformation {
+  // epoch contains the epoch (time window) in which this CRI is valid
+  int64 epoch = 1;
+
+  // epoch_pk is the public key that is used by the revocation authority in this
+  // epoch
+  ECP2 epoch_pk = 2;
+
+  // epoch_pk_sig is a signature on the EpochPK valid under the revocation
+  // authority's long term key
+  bytes epoch_pk_sig = 3;
+
+  // revocation_alg denotes which revocation algorithm is used
+  int32 revocation_alg = 4;
+
+  // revocation_data contains data specific to the revocation algorithm used
+  bytes revocation_data = 5;
+}
+
+// for Certificate
+message Certificate {
+  string cn = 1;
+  string name = 2;
+  string ca_name = 3;
+  string serial_number = 4;
+  repeated string hosts = 5;
+}
